@@ -1282,11 +1282,25 @@ FetchData <- function(object, vars, cells = NULL, slot = 'data') {
       data.fetched[[keyed.var]] <- as.vector(
         x = GetAssayData(object = object, assay = assay, slot = slot)[var, cells]
       )
-      vars <- sub(
+      var_check_ind <- vars == sub(
         pattern = paste0('^', var, '$'),
         replacement = keyed.var,
         x = vars
       )
+      if (isTRUE(all(var_check_ind))) {
+        vars <- sub(
+          pattern = var,
+          replacement = keyed.var,
+          x = vars,
+          fixed = TRUE
+        )
+      } else {
+        vars <- sub(
+          pattern = paste0('^', var, '$'),
+          replacement = keyed.var,
+          x = vars
+        )
+      }
     }
     fetched <- names(x = data.fetched)
   }
@@ -1312,11 +1326,13 @@ FetchData <- function(object, vars, cells = NULL, slot = 'data') {
     )
   }
   # Assembled fetched vars in a dataframe
+  data.feched_name <- names(data.fetched)
   data.fetched <- as.data.frame(
     x = data.fetched,
     row.names = cells,
     stringsAsFactors = FALSE
   )
+  colnames(data.fetched) <- data.feched_name
   data.order <- na.omit(object = pmatch(
     x = vars,
     table = fetched
